@@ -6,9 +6,16 @@ import (
 )
 
 func main() {
-	http.Handle("/", EnableCORS(http.FileServer(http.Dir("dist")).ServeHTTP))
+	http.HandleFunc("/", EnableCORS(http.FileServer(http.Dir("dev")).ServeHTTP))
+	http.HandleFunc("/assets/", EnableCORS(
+		http.StripPrefix("/assets",
+			http.FileServer(http.Dir("dist"))).ServeHTTP))
 	log.Printf("Serving %s on HTTP port: %d\n", "public", 8082)
 	log.Fatal(http.ListenAndServe(":8082", nil))
+}
+
+func serverFiles(prefix string, dir string) {
+
 }
 
 func EnableCORS(handlerFunc http.HandlerFunc) http.HandlerFunc {
