@@ -6,12 +6,15 @@ import (
 )
 
 func main() {
-	http.Handle("/", EnableCORS(http.FileServer(http.Dir("dist")).ServeHTTP))
+	http.HandleFunc("/", enableCORS(http.FileServer(http.Dir("dev")).ServeHTTP))
+	http.HandleFunc("/assets/", enableCORS(
+		http.StripPrefix("/assets",
+			http.FileServer(http.Dir("dist"))).ServeHTTP))
 	log.Printf("Serving %s on HTTP port: %d\n", "public", 8082)
 	log.Fatal(http.ListenAndServe(":8082", nil))
 }
 
-func EnableCORS(handlerFunc http.HandlerFunc) http.HandlerFunc {
+func enableCORS(handlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Access-Control-Allow-Origin", "*")
 		writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE")

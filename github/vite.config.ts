@@ -11,7 +11,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'Github',
       formats: ['es'],
-      fileName: (format) => `index.js`,
+      fileName: (format) => `app.js`,
     },
     rollupOptions: {
       // https://rollupjs.org/guide/en/#big-list-of-options
