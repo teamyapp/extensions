@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
-import { Dependencies } from '@teamyapp/ext';
+import { ExtensionRuntime } from '@teamyapp/ext';
 
 import styles from './LinkGithubAccountAction.component.module.scss';
-
-import github from './github.svg';
 import { Config } from './config';
-
-const redirectUrlParam = 'redirectUrl';
 
 interface Props {
     config: Config;
-    deps: Dependencies;
+    runtime: ExtensionRuntime;
     onActionComplete?: () => void;
 }
 
@@ -26,7 +22,7 @@ export class LinkGithubAccountActionComponent extends Component<Props, State> {
         return (
             <div className={styles.GithubPluginLinkGithubAccountAction}>
                 <div className={styles.GithubIcon}>
-                    <img src={github}/>
+                    <img src={this.props.runtime.getAssetUrl('assets/github.svg')}/>
                 </div>
                 <div className={styles.LinkButton} onClick={this.onLinkAccountButtonClick}>
                     Link Github
@@ -36,10 +32,6 @@ export class LinkGithubAccountActionComponent extends Component<Props, State> {
     }
 
     onLinkAccountButtonClick = () => {
-        const signInApi = new URL(
-            `${this.props.config.teamyCloudWebAPIEndpoint}/identity/sign-in/oauth/github`,
-        );
-        signInApi.searchParams.set(redirectUrlParam, this.props.config.teamyCloudSignInFinishUrl);
-        window.location.replace(signInApi.toString());
+        this.props.runtime.linkAccount('github');
     }
 }
