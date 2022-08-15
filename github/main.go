@@ -7,8 +7,8 @@ import (
 
 func main() {
 	http.HandleFunc("/", enableCORS(http.FileServer(http.Dir("dev")).ServeHTTP))
-	http.HandleFunc("/assets/", enableCORS(
-		http.StripPrefix("/assets",
+	http.HandleFunc("/app/", enableCORS(
+		http.StripPrefix("/app",
 			http.FileServer(http.Dir("dist"))).ServeHTTP))
 	log.Printf("Serving %s on HTTP port: %d\n", "public", 8082)
 	log.Fatal(http.ListenAndServe(":8082", nil))

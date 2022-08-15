@@ -60,9 +60,12 @@
     });
 
     async function loadExtension() {
-        const {App} = await import('/assets/app.js');
+        const {App} = await import('/app/app.js');
         const app = new App();
         app.init({
+            getAssetUrl(relativePath) {
+                return `app/${relativePath}`
+            },
             getAccessToken() {
                 return accessTokenInput.value;
             }

@@ -4,10 +4,10 @@ import {
     LinkGithubAccountActionComponent
 } from './LinkGithubAccountAction.component';
 import {
-    Dependencies,
+    ExtensionRuntime,
     RequiredAction,
     RequiredActionProps,
-    UiExtension
+    Extension
 } from '@teamyapp/ext';
 import { Config, getConfig } from './config';
 
@@ -24,8 +24,8 @@ interface RemoteRequiredAction {
     requestedByUserID: number
 }
 
-export class App implements UiExtension {
-    private deps?: Dependencies;
+export class App implements Extension {
+    private runtime?: ExtensionRuntime;
     private readonly config: Config;
 
     constructor() {
@@ -36,13 +36,13 @@ export class App implements UiExtension {
         return 'Github';
     }
 
-    public init(deps: Dependencies): void {
-        this.deps = deps;
+    public init(runtime: ExtensionRuntime): void {
+        this.runtime = runtime;
     }
 
     public async requiredActions(teamId: number): Promise<RequiredAction[]> {
         const url = `${this.config.githubAppWebEndpoint}/teams/${teamId}/required-actions/current-user`;
-        const response = await requestWithIdentity(this.deps!, url);
+        const response = await requestWithIdentity(this.runtime!, url);
         if (!response) {
             return [];
         }
@@ -71,7 +71,7 @@ export class App implements UiExtension {
                     <React.StrictMode>
                         <LinkGithubAccountActionComponent
                             config={this.config}
-                            deps={this.deps!}
+                            runtime={this.runtime!}
                             onActionComplete={requiredActionProps.onActionComplete}
                         />
                     </React.StrictMode>);
@@ -81,7 +81,7 @@ export class App implements UiExtension {
 }
 
 async function requestWithIdentity(
-    deps: Dependencies,
+    runtime: ExtensionRuntime,
     url: string,
     options?: {
         method: string;
@@ -92,7 +92,7 @@ async function requestWithIdentity(
     options = Object.assign(
         {
             headers: {
-                Authorization: `Bearer ${deps.getAccessToken()}`,
+                Authorization: `Bearer ${runtime.getAccessToken()}`,
             },
         },
         options,

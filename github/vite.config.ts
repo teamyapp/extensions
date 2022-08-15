@@ -1,8 +1,9 @@
-import {defineConfig} from 'vite';
-import {resolve} from 'path';
+import { defineConfig } from 'vite';
+import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
-import replace from "@rollup/plugin-replace";
-import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
+import replace from '@rollup/plugin-replace';
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -26,5 +27,13 @@ export default defineConfig({
   plugins: [
     react(),
     cssInjectedByJsPlugin(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'assets',
+          dest: '.'
+        }
+      ]
+    }),
   ]
 });
