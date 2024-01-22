@@ -9,32 +9,42 @@
 <div id="content">
     <table>
         <tbody>
-            <tr>
-                <td>Access Token:</td>
-                <td>
-                    <textarea id="accessTokenInput" type="text" value=""></textarea>
-                </td>
-            </tr>
-            <tr>
-                <td>Team ID:</td>
-                <td>
-                    <input id="teamIdInput" type="text" value="0"/>
-                </td>
-            </tr>
-            <tr>
-                <td>Required action index:</td>
-                <td><input id="requiredActionIndexInput" type="text" value="0"/></td>
-            </tr>
-            <tr>
-                <td>Action:</td>
-                <td><button onclick="loadExtension()">Load extension</button></td>
-            </tr>
+        <tr>
+            <td>Access Token:</td>
+            <td>
+                <textarea id="accessTokenInput" type="text" value=""></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>Team ID:</td>
+            <td>
+                <input id="teamIdInput" type="text" value="0"/>
+            </td>
+        </tr>
+        <tr>
+            <td>Required action index:</td>
+            <td><input id="requiredActionIndexInput" type="text" value="0"/>
+            </td>
+        </tr>
+        <tr>
+            <td>Action:</td>
+            <td>
+                <button onclick="loadExtension()">Load extension</button>
+            </td>
+        </tr>
         </tbody>
     </table>
     <div id="preview">
-    <div>Preview required action: </div>
-    <div id="view">
-    </div>
+        <h1>Preview</h1>
+        <div class="view-section">
+            <h2>Required action:</h2>
+            <div id="required-action-view"></div>
+        </div>
+        <div class="view-section">
+            <h2>Settings:</h2>
+            <div id="settings-view"></div>
+        </div>
+
     </div>
 </div>
 </body>
@@ -42,7 +52,8 @@
     const accessTokenInput = document.querySelector('#accessTokenInput');
     const teamIdInput = document.querySelector('#teamIdInput');
     const indexInput = document.querySelector('#requiredActionIndexInput');
-    const view = document.querySelector('#view');
+    const requiredActionView = document.querySelector('#required-action-view');
+    const settingsView = document.querySelector('#settings-view');
 
     accessTokenInput.value = localStorage.getItem('accessToken') || '';
     accessTokenInput.addEventListener('change', () => {
@@ -76,9 +87,11 @@
         if (requiredActions.length > 0) {
             const index = parseInt(indexInput.value);
             requiredActions[index].renderView({
-                container: view
+                container: requiredActionView
             });
         }
+
+        app.renderSettingsView?.call(null, teamId, settingsView);
     }
 </script>
 </html>
