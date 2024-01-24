@@ -1,15 +1,11 @@
-import { createRoot } from 'react-dom/client';
-import React from 'react';
 import {
-    LinkGithubAccountActionComponent
-} from './LinkGithubAccountAction.component';
-import {
-    ExtensionRuntime,
-    RequiredAction,
-    RequiredActionProps,
-    Extension
+    RequiredActions,
+    TaskIdAction,
+    ThirdPartyApp,
+    ThirdPartyAppDeps
 } from '@teamyapp/ext';
-import { Config, getConfig } from './config';
+import {ReactNode} from 'react';
+import {LinkGithubAccountActionComponent} from './components/LinkGithubAccountAction.component';
 
 type UserActionType =
     |'LINK_GITHUB_ACCOUNT';
@@ -24,81 +20,86 @@ interface RemoteRequiredAction {
     requestedByUserID: number
 }
 
-export class App implements Extension {
-    private runtime?: ExtensionRuntime;
-    private readonly config: Config;
+const githubAppWebEndpoint = import.meta.env.VITE_GITHUB_APP_WEB_ENDPOINT;
 
-    constructor() {
-        this.config = getConfig();
+
+export class App implements ThirdPartyApp {
+    private deps?: ThirdPartyAppDeps;
+
+    public name() {
+        return 'Github App';
     }
 
-    public name(): string {
-        return 'Github';
+    public init(deps: ThirdPartyAppDeps) {
+        this.deps = deps;
+        deps.eventListener.listenOnShowRequiredActions(this.onShowRequiredActions);
+        deps.eventListener.listenOnShowAppSetting(this.onShowAppSetting);
+        deps.eventListener.listenOnShowTaskIdActions(this.onTaskIdActions);
     }
 
-    public init(runtime: ExtensionRuntime): void {
-        this.runtime = runtime;
-    }
+    private onShowAppSetting = (): ReactNode => {
+        return 'Github App Setting';
+    };
 
-    public async requiredActions(teamId: number): Promise<RequiredAction[]> {
-        const url = `${this.config.githubAppWebEndpoint}/teams/${teamId}/required-actions/current-user`;
-        const response = await requestWithIdentity(this.runtime!, url);
+    private onShowRequiredActions = async (onActionComplete: () => void): Promise<RequiredActions[]> => {
+        const url = `${githubAppWebEndpoint}/teams/${this.deps?.client.getTeamId()}/required-actions/current-user`;
+        const response = await this.requestWithIdentity(url);
         if (!response) {
             return [];
         }
+
         const remoteRequiredActions: RemoteRequiredAction[] = JSON.parse(response!);
         return remoteRequiredActions.map(remoteRequiredAction => {
             switch (remoteRequiredAction.userActionType) {
                 case 'LINK_GITHUB_ACCOUNT':
-                    return this.linkGithubAccountAction();
+                    return {
+                        actionName: 'Link Github Account',
+                        view: this.deps &&
+                            <LinkGithubAccountActionComponent deps={this.deps} onActionComplete={onActionComplete}/>,
+                    };
             }
         });
-    }
+    };
 
-    public renderSettingsView(teamId: number, container: Element): void {
-    }
-
-    private linkGithubAccountAction(): RequiredAction {
-        return {
-            name: () => {
-                return `Link Github account`;
-            },
-            renderView: (requiredActionProps: RequiredActionProps) => {
-                const root = createRoot(
-                    requiredActionProps.container
-                );
-                root.render(
-                    <React.StrictMode>
-                        <LinkGithubAccountActionComponent
-                            config={this.config}
-                            runtime={this.runtime!}
-                            onActionComplete={requiredActionProps.onActionComplete}
-                        />
-                    </React.StrictMode>);
+    private onTaskIdActions = (taskId: number): TaskIdAction[] => {
+        return [
+            {
+                key: 'copy-mention-task',
+                view: <>Copy mention task</>,
+                execute: (taskId: number): void => {
+                    const teamId = this.deps?.client.getTeamId();
+                    if (teamId) {
+                        const taskPath = this.deps?.client.getTaskPath(teamId, taskId);
+                        const mentionTask = `[(task:${taskId})](${taskPath})`;
+                        navigator.clipboard.writeText(mentionTask);
+                        this.deps?.client.showDynamicFeedback(
+                            `Github Mention for task(${taskId}) is copied to clipboard`,
+                        );
+                    }
+                },
             }
-        };
-    }
-}
+        ];
+    };
 
-async function requestWithIdentity(
-    runtime: ExtensionRuntime,
-    url: string,
-    options?: {
-        method: string;
-        headers?: Record<string, string>;
-        body?: string;
-    },
-) {
-    options = Object.assign(
-        {
-            headers: {
-                Authorization: `Bearer ${runtime.getAccessToken()}`,
-            },
+    private requestWithIdentity = async (
+        url: string,
+        options?: {
+            method: string;
+            headers?: Record<string, string>;
+            body?: string;
         },
-        options,
-    );
+    ) => {
+        options = Object.assign(
+            {
+                headers: {
+                    Authorization: `Bearer ${this.deps?.client.getAccessToken()}`,
+                },
+            },
+            options,
+        );
 
-    return request(url, options);
+        return request(url, options);
+    };
 }
 
 async function request(

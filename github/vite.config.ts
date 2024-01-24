@@ -21,11 +21,13 @@ export default defineConfig({
           'process.env.NODE_ENV': `'production'`,
           'preventAssignment': true,
         }),
-      ]
-    }
+      ],
+    },
   },
   plugins: [
-    react(),
+    react({
+      jsxRuntime: 'classic',
+    }),
     cssInjectedByJsPlugin(),
     viteStaticCopy({
       targets: [
