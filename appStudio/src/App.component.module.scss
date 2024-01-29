@@ -1,0 +1,341 @@
+@import 'material-symbols/index.css';
+
+$bottomPanelHeight: 260px;
+$bottomPanelTopBarHeight: 40px;
+$rightPanelWidth: 340px;
+$rightPanelLeftBarWidth: 40px;
+
+@mixin action {
+    .Action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        width: 26px;
+        height: 26px;
+        color: #6c6c6c;
+        user-select: none;
+
+        > i {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        &.Active {
+            background-color: rgb(0, 128, 255);
+            color: white;
+        }
+
+        &:hover {
+            cursor: pointer;
+
+            &:not(.Active) {
+                background-color: rgba(0, 0, 0, 0.06);
+            }
+        }
+    }
+}
+
+.App {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+
+    > .TopBar {
+        width: 100%;
+        background-color: #007a88;
+        color: white;
+        display: flex;
+        height: 40px;
+
+        .Tabs {
+            display: flex;
+            justify-content: center;
+
+            .Tab {
+                display: flex;
+                align-items: center;
+                height: 100%;
+                font-size: 20px;
+                padding: 0 40px;
+
+                &:hover {
+                    cursor: pointer;
+                    background-color: rgba(0, 0, 0, 0.2);
+                }
+            }
+        }
+
+        .LeftSection, .RightSection {
+            flex: 1;
+        }
+
+        .LeftSection {
+            display: flex;
+            align-items: center;
+            padding-left: 40px;
+
+            .Logo {
+                font-size: 20px;
+                font-weight: bold;
+                user-select: none;
+            }
+        }
+
+        .RightSection {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 40px;
+
+            .Reload {
+                padding: 0 40px;
+                display: flex;
+                align-items: center;
+                height: 100%;
+                font-weight: bold;
+
+                &:hover {
+                    cursor: pointer;
+                    background-color: rgba(0, 0, 0, 0.2);
+                }
+            }
+        }
+    }
+
+    .MainSection {
+        display: flex;
+        flex: 1;
+        overflow-y: hidden;
+        background-color: #f1f1f1;
+
+        .TabContent {
+            flex: 1;
+            display: flex;
+            padding: 40px 0;
+            margin: 0 20px;
+            box-sizing: border-box;
+            flex-direction: column;
+            row-gap: 20px;
+            align-items: center;
+            overflow-y: auto;
+
+            .Section {
+                width: 1100px;
+                background-color: white;
+                border-radius: 4px;
+                box-sizing: border-box;
+                padding: 40px;
+                box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+
+                .Title {
+                    font-weight: bold;
+                    font-size: 20px;
+                    margin-bottom: 20px;
+                }
+
+                .View {
+                    border: 3px solid #eaeaea;
+
+                    &.AppSetting {
+                        width: 1000px;
+                        height: 600px;
+                    }
+
+                    &.RequiredActions {
+                        width: 800px;
+                        height: 450px;
+                    }
+
+                    &.TaskIdActions {
+                        width: 200px;
+                    }
+
+                    &.DynamicFeedback {
+                        padding: 10px 20px;
+                    }
+                }
+            }
+
+            .TaskIdAction {
+                padding: 8px 20px;
+                font-size: 16px;
+                font-weight: bold;
+                box-sizing: border-box;
+
+                &:hover {
+                    background-color: #424242;
+                    cursor: pointer;
+                    color: white;
+                }
+
+                &:not(:first-child) {
+                    border-top: 1px solid #eeeeee;
+                }
+            }
+
+            .TeamyViews {
+                display: flex;
+                gap: 20px;
+            }
+        }
+
+        .RightPanel {
+            width: $rightPanelWidth;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            margin-right: -($rightPanelWidth - $rightPanelLeftBarWidth);
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            overflow-x: hidden;
+            display: flex;
+            transition: margin-right 400ms cubic-bezier(0.87, 0, 0.13, 1);
+            border-radius: 4px 0 0 4px;
+
+            &.ShowRightPanel {
+                margin-right: 0;
+            }
+
+            .LeftBar {
+                width: 40px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+                row-gap: 4px;
+                border-right: 1px solid #efefef;
+
+                @include action;
+            }
+
+            .Content {
+                flex: 1;
+                overflow-y: auto;
+                padding: 40px 0;
+                box-sizing: border-box;
+            }
+
+            .Title {
+                font-weight: bold;
+                font-size: 30px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .Inputs {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: 0 20px;
+                row-gap: 20px;
+                overflow-y: auto;
+
+                .Input {
+                    box-sizing: border-box;
+                    outline: none;
+                    border: none;
+                    background-color: #e8e8e8;
+                    padding: 6px 10px;
+                    border-radius: 4px;
+                }
+
+                .NextRow {
+                    .Input {
+                        width: 100%;
+
+                        &.AccessToken {
+                            height: 140px;
+                            resize: none;
+                        }
+                    }
+                }
+
+                .SameRow {
+                    display: flex;
+                    align-items: center;
+
+                    .Label {
+                        margin-right: 10px;
+                        flex-shrink: 0;
+                    }
+
+                    .Input {
+                        flex: 1 1 auto;
+                    }
+                }
+            }
+        }
+    }
+
+    .BottomPanel {
+        background-color: white;
+        width: 100%;
+        height: $bottomPanelHeight;
+        margin-bottom: -($bottomPanelHeight - $bottomPanelTopBarHeight);
+        overflow-y: hidden;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        transition: margin-bottom 400ms cubic-bezier(0.87, 0, 0.13, 1);
+
+        &.Show {
+            margin-bottom: 0;
+        }
+
+        > .TopBar {
+            flex-shrink: 0;
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+            height: 40px;
+            padding: 0 10px;
+            align-items: center;
+
+            .LeftSection {
+                flex: 1;
+                display: flex;
+            }
+
+            .RightSection {
+                display: flex;
+                column-gap: 4px;
+
+                @include action;
+            }
+        }
+
+        .Outputs {
+            margin: 0 10px 10px 10px;
+            padding: 10px;
+            box-sizing: border-box;
+            flex: 1;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.07);
+            border-radius: 6px;
+
+            .Line {
+                display: flex;
+                width: 100%;
+
+                .Number {
+                    width: 20px;
+                    margin-right: 10px;
+                    font-size: 14px;
+                    color: #6e6e6e;
+                }
+            }
+        }
+    }
+
+    .Label {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .NextRow {
+        .Label {
+            margin-bottom: 10px;
+        }
+    }
+}

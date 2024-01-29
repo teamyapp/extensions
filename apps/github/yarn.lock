@@ -320,10 +320,10 @@
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
 
-"@teamyapp/ext@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@teamyapp/ext/-/ext-0.0.12.tgz#50e6da59a1a9b0c21d7f998d18aa9f33f0aba15d"
-  integrity sha512-Nibvo9lvERZE+vMEb7SlWh8/XxNgAugU5VPv1JLPehE8GOtdqyWfUqfQ4c8VlULgPWCy/2yoQQ8Q0aX92vQ3WQ==
+"@teamyapp/ext@^0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@teamyapp/ext/-/ext-0.0.15.tgz#58fa55dace227c5816bb51dad5c5076f58e788ac"
+  integrity sha512-XTMV8qn+EDIHzqk5y2xJDiPUA+lkPd7O2IFJJ0ltvQGX5eStlrkRCnZWwm6gnLqPcj6suQ6pktTXNLbLxbTZoQ==
 
 "@types/estree@0.0.39":
   version "0.0.39"
