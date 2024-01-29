@@ -230,7 +230,9 @@ export function AppComponent() {
     const renderMaterialIcon = (icon: string, iconStyle: string, extraClassNames?: string) => (
         <i className={`${
             styles[`material-symbols-${iconStyle}`]
-        } ${extraClassNames ? extraClassNames : ''}`}>{icon}</i>
+        } ${extraClassNames ? extraClassNames : ''}`}>
+            {icon}
+        </i>
     );
 
     return (
@@ -382,6 +384,5 @@ export function AppComponent() {
                 </div>
             </div>
         </div>
-    )
-        ;
+    );
 }
