@@ -1,5 +1,5 @@
 import {
-    RequiredActions,
+    RequiredAction,
     TaskIdAction,
     ThirdPartyApp,
     ThirdPartyAppDeps
@@ -41,7 +41,7 @@ export class App implements ThirdPartyApp {
         return 'Github App Setting';
     };
 
-    private onShowRequiredActions = async (onActionComplete: () => void): Promise<RequiredActions[]> => {
+    private onShowRequiredActions = async (onActionComplete: () => void): Promise<RequiredAction[]> => {
         const url = `${githubAppWebEndpoint}/teams/${this.deps?.client.getTeamId()}/required-actions/current-user`;
         const response = await this.requestWithIdentity(url);
         if (!response) {
@@ -66,7 +66,7 @@ export class App implements ThirdPartyApp {
             {
                 key: 'copy-mention-task',
                 view: <>Copy mention task</>,
-                execute: (taskId: number): void => {
+                execute: (): void => {
                     const teamId = this.deps?.client.getTeamId();
                     if (teamId) {
                         const taskPath = this.deps?.client.getTaskPath(teamId, taskId);

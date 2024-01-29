@@ -1,0 +1,60 @@
+.EditEvent {
+    select {
+        width: 100%;
+        padding: 6px 10px;
+        outline: none;
+        font-weight: bold;
+        border: 2px solid #eaeaea;
+        font-size: 14px;
+    }
+
+    .Input {
+        box-sizing: border-box;
+        outline: none;
+        border: none;
+        background-color: #e8e8e8;
+        padding: 6px 10px;
+        border-radius: 4px;
+    }
+
+    .SameRow {
+        display: flex;
+        align-items: center;
+
+        .Label {
+            margin-right: 10px;
+        }
+
+        .Input {
+            flex: 1;
+        }
+    }
+
+    .EditEventDetail {
+        margin-top: 10px;
+        padding: 10px;
+        border: 2px solid #eaeaea;
+    }
+
+    .Button {
+        padding: 6px 40px;
+        border: 2px solid #2e7d32;
+        border-radius: 6px;
+        background-color: #388e3c;
+        color: white;
+        font-size: 20px;
+        font-weight: 500;
+        text-align: center;
+        box-sizing: border-box;
+        user-select: none;
+
+        &:hover {
+            cursor: pointer;
+            opacity: 0.9;
+        }
+
+        &.TriggerEvent {
+            margin-top: 10px;
+        }
+    }
+}
