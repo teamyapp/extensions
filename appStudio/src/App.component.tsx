@@ -1,18 +1,28 @@
 import './App.component.module.scss';
-import {RequiredAction, TaskIdAction, ThirdPartyApp, ThirdPartyAppClient, ThirdPartyAppEventHub} from '@teamyapp/ext';
+import {
+    CleanupFunc,
+    RenderFunc,
+    RequiredAction,
+    TaskIdAction,
+    ThirdPartyApp,
+    ThirdPartyAppClient,
+    ThirdPartyAppEventHub
+} from '@teamyapp/ext';
 import classNames from 'classnames';
-import {ChangeEvent, ReactNode, useEffect, useRef, useState} from 'react';
+import {ChangeEvent, createRef, RefObject, useEffect, useRef, useState} from 'react';
 import styles from './App.component.module.scss';
 import {EditEventComponent} from './EditEvent.component';
 import {Event, OnShowTaskIdActionsEvent} from './event';
 
-const inputValuesKey = 'inputValues';
+const persistedStateKey = 'persistedState';
 
-interface InputValues {
-    accessToken?: string;
+interface PersistedState {
+    accessToken: string;
     teamId?: number;
     requiredActionIndex?: number;
     event?: Event;
+    showBottomPanel?: boolean;
+    showRightPanel?: boolean;
 }
 
 interface ThirdPartyAppPackage {
@@ -32,18 +42,18 @@ const thirdPartyAppPackages: ThirdPartyAppPackage[] = [
 class AppStudioThirdPartyAppClient implements ThirdPartyAppClient {
     constructor(
         private packageRoot: string,
-        private getInputValues: () => InputValues,
+        private getPersistedState: () => PersistedState,
         private log: (message: string) => void,
-        private _showDynamicFeedback: (feedbackView: ReactNode) => void,
+        private _showDynamicFeedback: (renderFunc: RenderFunc) => void,
     ) {
     }
 
     getTeamId(): number | undefined {
-        return this.getInputValues().teamId;
+        return this.getPersistedState().teamId;
     }
 
     getAccessToken(): string | undefined {
-        return this.getInputValues().accessToken;
+        return this.getPersistedState().accessToken;
     }
 
     linkAccount(authProvider: string): void {
@@ -58,37 +68,42 @@ class AppStudioThirdPartyAppClient implements ThirdPartyAppClient {
         return `http://appStudio/${teamId}/tasks/${taskId}`;
     }
 
-    showDynamicFeedback(feedbackView: ReactNode): void {
-        this._showDynamicFeedback(feedbackView);
+    showDynamicFeedback(renderFunc: RenderFunc): void {
+        this._showDynamicFeedback(renderFunc);
     }
 }
 
 export function AppComponent() {
+    const persistedStateStr = localStorage.getItem(persistedStateKey);
+    const defaultPersistedState = persistedStateStr ? JSON.parse(persistedStateStr) : {
+        accessToken: '',
+    };
+
     const [thirdPartyAppEventHubs, setThirdPartyAppEventHubs] = useState<ThirdPartyAppEventHub[]>([]);
     const [selectedAppIndex, setSelectedAppIndex] = useState(0);
     const [requiredActions, setRequiredActions] = useState<RequiredAction[]>();
-    const [requiredActionIndex, setRequiredActionIndex] = useState(0);
-    const [inputValues, setInputValues] = useState<InputValues>({});
+    const [persistedState, setPersistedState] = useState<PersistedState>(defaultPersistedState);
     const [taskIdActions, setTaskIdActions] = useState<TaskIdAction[]>([]);
     const [log, setLog] = useState<string[]>([]);
-    const [dynamicFeedbackView, setDynamicFeedbackView] = useState<ReactNode>(null);
-    const [showBottomPanel, setShowBottomPanel] = useState(true);
-    const [showRightPanel, setShowRightPanel] = useState(true);
     const logMutRef = useRef(log);
-    const tmpInputValuesMutRef = useRef<InputValues>({
-        accessToken: '',
-        teamId: 0,
-        requiredActionIndex: 0,
-    });
+    const persistedStateMutRef = useRef<PersistedState>(defaultPersistedState);
     const outputElMutRef = useRef<HTMLDivElement>(null);
+    const appSettingsElMutRef = useRef<HTMLDivElement>(null);
+    const requiredActionElMutRef = useRef<HTMLDivElement>(null);
+    const dynamicFeedbackElRef = useRef<HTMLDivElement>(null);
+    let taskIdActionElRefs: Record<string, RefObject<HTMLDivElement>> = {};
 
     const renderApp = async (tmpThirdPartyAppEventHubs: ThirdPartyAppEventHub[], appIndex: number) => {
         const requiredActions = await tmpThirdPartyAppEventHubs[appIndex].onShowRequiredActions?.(() => {
-            setRequiredActionIndex(requiredActionIndex + 1);
+            persistedStateMutRef.current.requiredActionIndex = (persistedStateMutRef.current.requiredActionIndex || 0) + 1;
+            updatePersistedState();
         });
         setRequiredActions(requiredActions);
         setTaskIdActions([]);
-        setDynamicFeedbackView(null);
+
+        if (dynamicFeedbackElRef.current) {
+            dynamicFeedbackElRef.current.innerHTML = '';
+        }
     };
 
     const loadApps = async () => {
@@ -105,16 +120,18 @@ export function AppComponent() {
                     const client: ThirdPartyAppClient =
                         new AppStudioThirdPartyAppClient(
                             pkg.root,
-                            () => tmpInputValuesMutRef.current,
+                            () => persistedStateMutRef.current,
                             (message: string) => {
                                 logMutRef.current = logMutRef.current.concat(message);
                                 setLog(logMutRef.current);
                             },
-                            (feedbackView: ReactNode) => {
-                                setDynamicFeedbackView(feedbackView);
-                                setTimeout(() => {
-                                    setDynamicFeedbackView(null);
-                                }, 5_000);
+                            (renderFunc: RenderFunc) => {
+                                if (dynamicFeedbackElRef.current) {
+                                    const cleanupFunc = renderFunc(dynamicFeedbackElRef.current);
+                                    setTimeout(() => {
+                                        cleanupFunc();
+                                    }, 5000);
+                                }
                             });
                     app.init({
                         eventListener: thirdPartyAppEventHub,
@@ -130,13 +147,6 @@ export function AppComponent() {
     };
 
     useEffect(() => {
-        const inputValuesStr = localStorage.getItem(inputValuesKey);
-        tmpInputValuesMutRef.current = inputValuesStr ? JSON.parse(inputValuesStr) : {
-            accessToken: '',
-            teamId: 0,
-            requiredActionIndex: 0,
-        };
-        setInputValues(tmpInputValuesMutRef.current);
         loadApps();
     }, []);
 
@@ -147,39 +157,78 @@ export function AppComponent() {
         });
     }, [log]);
 
+    useEffect(() => {
+        if (selectedAppIndex < thirdPartyAppEventHubs.length && appSettingsElMutRef.current) {
+            const thirdPartyAppEventHub = thirdPartyAppEventHubs[selectedAppIndex];
+            return thirdPartyAppEventHub.onShowAppSetting?.(appSettingsElMutRef.current);
+        }
+
+    }, [thirdPartyAppEventHubs, selectedAppIndex, appSettingsElMutRef.current]);
+
+    useEffect(() => {
+        if (requiredActions && requiredActionElMutRef.current) {
+            if (persistedState.requiredActionIndex == undefined || persistedState.requiredActionIndex >= requiredActions.length) {
+                return;
+            }
+
+            const requiredAction = requiredActions[persistedState.requiredActionIndex];
+            return requiredAction.renderView(requiredActionElMutRef.current);
+        }
+    }, [requiredActions, persistedState.requiredActionIndex, requiredActionElMutRef.current]);
+
+    useEffect(() => {
+        const cleanupFuncs: CleanupFunc[] = [];
+        taskIdActions.forEach((taskIdAction) => {
+            const key = `${thirdPartyAppEventHubs[selectedAppIndex].appId}/${taskIdAction.key}`;
+            const curr = taskIdActionElRefs[key].current;
+            if (curr) {
+                cleanupFuncs.push(taskIdAction.renderView(curr));
+            }
+        });
+        return () => {
+            cleanupFuncs.forEach(cleanupFunc => cleanupFunc());
+            taskIdActionElRefs = {};
+        };
+    }, [taskIdActions]);
+
     const onReloadAppsClick = async () => {
         await loadApps();
     };
 
     const onAccessTokenChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-        tmpInputValuesMutRef.current = Object.assign({}, tmpInputValuesMutRef.current, {
-            accessToken: event.target.value
-        });
-        setInputValues(tmpInputValuesMutRef.current);
-        localStorage.setItem(inputValuesKey, JSON.stringify(tmpInputValuesMutRef.current));
+        persistedStateMutRef.current.accessToken = event.target.value;
+        updatePersistedState();
     };
 
     const onTeamIdChange = (event: ChangeEvent<HTMLInputElement>) => {
-        tmpInputValuesMutRef.current = Object.assign({}, tmpInputValuesMutRef.current, {
-            teamId: Number(event.target.value)
-        });
-        setInputValues(tmpInputValuesMutRef.current);
-        localStorage.setItem(inputValuesKey, JSON.stringify(tmpInputValuesMutRef.current));
+        persistedStateMutRef.current.teamId = undefined;
+        if (event.target.value.length > 0) {
+            const num = Number(event.target.value);
+            if (!isNaN(num)) {
+                persistedStateMutRef.current.teamId = num;
+            }
+        }
+
+        updatePersistedState();
+        renderApp(thirdPartyAppEventHubs, selectedAppIndex);
     };
 
     const onRequiredActionIndexChange = (event: ChangeEvent<HTMLInputElement>) => {
-        tmpInputValuesMutRef.current = Object.assign({}, tmpInputValuesMutRef.current, {
-            requiredActionIndex: Number(event.target.value)
-        });
-        setInputValues(tmpInputValuesMutRef.current);
-        localStorage.setItem(inputValuesKey, JSON.stringify(tmpInputValuesMutRef.current));
+        persistedStateMutRef.current.requiredActionIndex = undefined;
+        if (event.target.value.length > 0) {
+            const num = Number(event.target.value);
+            if (!isNaN(num)) {
+                persistedStateMutRef.current.requiredActionIndex = num;
+            }
+        }
+        updatePersistedState();
     };
 
     const triggerOnShowTaskIdActionsEvent = (event: OnShowTaskIdActionsEvent) => {
         const tmpTaskIdActions: TaskIdAction[] = [];
         thirdPartyAppEventHubs.forEach((thirdPartyAppEventHub) => {
             const taskIdActions = thirdPartyAppEventHub.onShowTaskIdActions?.(event.taskId);
-            taskIdActions?.forEach(taskIdAction => {
+            taskIdActions?.forEach((taskIdAction: TaskIdAction) => {
                 tmpTaskIdActions.push(taskIdAction);
             });
         });
@@ -202,11 +251,8 @@ export function AppComponent() {
     };
 
     const onEventChange = (event: Event | undefined) => {
-        tmpInputValuesMutRef.current = Object.assign({}, tmpInputValuesMutRef.current, {
-            event,
-        });
-        setInputValues(tmpInputValuesMutRef.current);
-        localStorage.setItem(inputValuesKey, JSON.stringify(tmpInputValuesMutRef.current));
+        persistedStateMutRef.current.event = event;
+        updatePersistedState();
     };
 
     const onSelectedAppIndexChange = (index: number) => async () => {
@@ -220,11 +266,18 @@ export function AppComponent() {
     };
 
     const onToggleBottomPanelClick = () => {
-        setShowBottomPanel(!showBottomPanel);
+        persistedStateMutRef.current.showBottomPanel = !persistedState.showBottomPanel;
+        updatePersistedState();
     };
 
     const onToggleRightPanelClick = () => {
-        setShowRightPanel(!showRightPanel);
+        persistedStateMutRef.current.showRightPanel = !persistedState.showRightPanel;
+        updatePersistedState();
+    };
+
+    const updatePersistedState = () => {
+        setPersistedState(Object.assign({}, persistedStateMutRef.current));
+        localStorage.setItem(persistedStateKey, JSON.stringify(persistedStateMutRef.current));
     };
 
     const renderMaterialIcon = (icon: string, iconStyle: string, extraClassNames?: string) => (
@@ -234,6 +287,14 @@ export function AppComponent() {
             {icon}
         </i>
     );
+
+    const getTaskIdActionRef = (key: string): RefObject<HTMLDivElement> => {
+        if (!taskIdActionElRefs[key]) {
+            taskIdActionElRefs[key] = createRef();
+        }
+
+        return taskIdActionElRefs[key];
+    };
 
     return (
         <div className={styles.App}>
@@ -258,17 +319,13 @@ export function AppComponent() {
                 <div className={styles.TabContent}>
                     <div className={`${styles.Section}`}>
                         <div className={styles.Title}>App Setting</div>
-                        <div className={`${styles.View} ${styles.AppSetting}`}>
-                            {selectedAppIndex < thirdPartyAppEventHubs.length &&
-                                thirdPartyAppEventHubs[selectedAppIndex].onShowAppSetting?.()}
-                        </div>
+                        <div className={`${styles.View} ${styles.AppSetting}`}
+                             ref={appSettingsElMutRef}/>
                     </div>
                     <div className={`${styles.Section}`}>
                         <div className={styles.Title}>Required Actions</div>
-                        <div className={`${styles.View} ${styles.RequiredActions}`}>
-                            {requiredActions && requiredActionIndex < requiredActions.length &&
-                                requiredActions[requiredActionIndex].view}
-                        </div>
+                        <div className={`${styles.View} ${styles.RequiredActions}`}
+                             ref={requiredActionElMutRef}/>
                     </div>
                     <div className={`${styles.Section}`}>
                         <div className={styles.Title}>Teamy UI</div>
@@ -278,21 +335,26 @@ export function AppComponent() {
                                     TaskId Actions:
                                 </div>
                                 <div className={`${styles.View} ${styles.TaskIdActions}`}>
-                                    {taskIdActions.map((taskIdAction) => (
-                                        <div key={taskIdAction.key}
-                                             className={styles.TaskIdAction}
-                                             onClick={onTaskIdActionClickHandler(taskIdAction)}>
-                                            {taskIdAction.view}
-                                        </div>
-                                    ))}
+                                    {
+                                        taskIdActions.map((taskIdAction) => {
+                                            const key = `${thirdPartyAppEventHubs[selectedAppIndex].appId}/${taskIdAction.key}`;
+                                            return (
+                                                <div key={key}
+                                                     ref={getTaskIdActionRef(key)}
+                                                     className={styles.TaskIdAction}
+                                                     onClick={onTaskIdActionClickHandler(taskIdAction)}>
+                                                </div>
+                                            );
+                                        })
+                                    }
                                 </div>
                             </div>
                             <div className={styles.NextRow}>
                                 <div className={`${styles.Label}`}>
                                     Dynamic Feedback:
                                 </div>
-                                <div className={`${styles.View} ${styles.DynamicFeedback}`}>
-                                    {dynamicFeedbackView}
+                                <div className={`${styles.View} ${styles.DynamicFeedback}`}
+                                     ref={dynamicFeedbackElRef}>
                                 </div>
                             </div>
                         </div>
@@ -300,18 +362,18 @@ export function AppComponent() {
                 </div>
                 <div className={`${styles.RightPanel} ${
                     classNames({
-                        [styles.ShowRightPanel]: showRightPanel,
+                        [styles.Show]: persistedState.showRightPanel,
                     })
                 }`}>
                     <div className={styles.LeftBar}>
                         <div className={`${styles.Action} ${classNames({
-                            [styles.Active]: !showRightPanel
+                            [styles.Active]: !persistedState.showRightPanel
                         })}`}
                              style={{
                                  fontVariationSettings: '"FILL" 1',
                              }}
                              onClick={onToggleRightPanelClick}>
-                            {renderMaterialIcon(showRightPanel ? 'collapse_content' : 'expand_content', 'outlined')}
+                            {renderMaterialIcon(persistedState.showRightPanel ? 'collapse_content' : 'expand_content', 'outlined')}
                         </div>
                     </div>
                     <div className={styles.Content}>
@@ -323,7 +385,7 @@ export function AppComponent() {
                                 </div>
                                 <textarea
                                     className={`${styles.Input} ${styles.AccessToken}`}
-                                    value={inputValues.accessToken || ''}
+                                    value={persistedState.accessToken || ''}
                                     onChange={onAccessTokenChange}/>
                             </div>
                             <div className={styles.SameRow}>
@@ -331,7 +393,7 @@ export function AppComponent() {
                                     Team ID:
                                 </div>
                                 <input className={`${styles.Input} ${styles.TeamId}`}
-                                       value={inputValues.teamId || '0'}
+                                       value={persistedState.teamId === undefined ? '' : persistedState.teamId}
                                        onChange={onTeamIdChange}/>
                             </div>
                             <div className={styles.NextRow}>
@@ -339,7 +401,7 @@ export function AppComponent() {
                                     Required Action Index:
                                 </div>
                                 <input className={`${styles.Input} ${styles.RequiredActionIndex}`}
-                                       value={inputValues.requiredActionIndex || '0'}
+                                       value={persistedState.requiredActionIndex === undefined ? '' : persistedState.requiredActionIndex}
                                        onChange={onRequiredActionIndexChange}/>
                             </div>
                             <div className={styles.NextRow}>
@@ -347,7 +409,7 @@ export function AppComponent() {
                                     Event:
                                 </div>
                                 <EditEventComponent
-                                    event={inputValues.event}
+                                    event={persistedState.event}
                                     onEventChange={onEventChange}
                                     onTriggerEvent={onTriggerEvent}/>
                             </div>
@@ -356,7 +418,7 @@ export function AppComponent() {
                 </div>
             </div>
             <div className={`${styles.BottomPanel} ${classNames({
-                [styles.Show]: showBottomPanel
+                [styles.Show]: persistedState.showBottomPanel
             })}`}>
                 <div className={styles.TopBar}>
                     <div className={styles.LeftSection}>
@@ -364,13 +426,13 @@ export function AppComponent() {
                     </div>
                     <div className={styles.RightSection}>
                         <div className={`${styles.Action} ${classNames({
-                            [styles.Active]: !showBottomPanel
+                            [styles.Active]: !persistedState.showBottomPanel
                         })}`}
                              style={{
                                  fontVariationSettings: '"FILL" 1',
                              }}
                              onClick={onToggleBottomPanelClick}>
-                            {renderMaterialIcon(showBottomPanel ? 'collapse_content' : 'expand_content', 'outlined')}
+                            {renderMaterialIcon(persistedState.showBottomPanel ? 'collapse_content' : 'expand_content', 'outlined')}
                         </div>
                     </div>
                 </div>

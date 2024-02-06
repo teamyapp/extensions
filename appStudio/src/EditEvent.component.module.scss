@@ -1,25 +1,25 @@
 .EditEvent {
     select {
-        width: 100%;
-        padding: 6px 10px;
-        outline: none;
-        font-weight: bold;
         border: 2px solid #eaeaea;
         font-size: 14px;
+        font-weight: bold;
+        outline: none;
+        padding: 6px 10px;
+        width: 100%;
     }
 
     .Input {
+        background-color: #e8e8e8;
+        border: none;
+        border-radius: 4px;
         box-sizing: border-box;
         outline: none;
-        border: none;
-        background-color: #e8e8e8;
         padding: 6px 10px;
-        border-radius: 4px;
     }
 
     .SameRow {
-        display: flex;
         align-items: center;
+        display: flex;
 
         .Label {
             margin-right: 10px;
@@ -31,21 +31,21 @@
     }
 
     .EditEventDetail {
+        border: 2px solid #eaeaea;
         margin-top: 10px;
         padding: 10px;
-        border: 2px solid #eaeaea;
     }
 
     .Button {
-        padding: 6px 40px;
+        background-color: #388e3c;
         border: 2px solid #2e7d32;
         border-radius: 6px;
-        background-color: #388e3c;
+        box-sizing: border-box;
         color: white;
         font-size: 20px;
         font-weight: 500;
+        padding: 6px 40px;
         text-align: center;
-        box-sizing: border-box;
         user-select: none;
 
         &:hover {

@@ -1,8 +1,5 @@
+import {ThirdPartyAppDeps} from '@teamyapp/ext';
 import React from 'react';
-
-import {
-    ThirdPartyAppDeps
-} from '@teamyapp/ext';
 
 import styles from './LinkGithubAccountAction.component.module.scss';
 
