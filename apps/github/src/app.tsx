@@ -2,10 +2,12 @@ import {
     RequiredAction,
     TaskIdAction,
     ThirdPartyApp,
-    ThirdPartyAppDeps
+    ThirdPartyAppDeps,
+    CleanupFunc
 } from '@teamyapp/ext';
-import {ReactNode} from 'react';
+import {render, unmountComponentAtNode} from 'react-dom';
 import {LinkGithubAccountActionComponent} from './components/LinkGithubAccountAction.component';
+import {SettingsComponent} from './components/Settings.component';
 
 type UserActionType =
     |'LINK_GITHUB_ACCOUNT';
@@ -22,7 +24,6 @@ interface RemoteRequiredAction {
 
 const githubAppWebEndpoint = import.meta.env.VITE_GITHUB_APP_WEB_ENDPOINT;
 
-
 export class App implements ThirdPartyApp {
     private deps?: ThirdPartyAppDeps;
 
@@ -37,8 +38,14 @@ export class App implements ThirdPartyApp {
         deps.eventListener.listenOnShowTaskIdActions(this.onTaskIdActions);
     }
 
-    private onShowAppSetting = (): ReactNode => {
-        return 'Github App Setting';
+    private onShowAppSetting = (container: HTMLElement): CleanupFunc => {
+        if (this.deps) {
+            render(<SettingsComponent deps={this.deps}/>, container);
+        }
+
+        return () => {
+            unmountComponentAtNode(container);
+        };
     };
 
     private onShowRequiredActions = async (onActionComplete: () => void): Promise<RequiredAction[]> => {
@@ -54,8 +61,16 @@ export class App implements ThirdPartyApp {
                 case 'LINK_GITHUB_ACCOUNT':
                     return {
                         actionName: 'Link Github Account',
-                        view: this.deps &&
-                            <LinkGithubAccountActionComponent deps={this.deps} onActionComplete={onActionComplete}/>,
+                        renderView: (container: HTMLElement): CleanupFunc => {
+                            if (this.deps) {
+                                render(<LinkGithubAccountActionComponent deps={this.deps}
+                                                                         onActionComplete={onActionComplete}/>, container);
+                            }
+
+                            return () => {
+                                unmountComponentAtNode(container);
+                            };
+                        }
                     };
             }
         });
@@ -65,15 +80,24 @@ export class App implements ThirdPartyApp {
         return [
             {
                 key: 'copy-mention-task',
-                view: <>Copy mention task</>,
+                renderView: (container: HTMLElement): CleanupFunc => {
+                    render(<>Copy mention task</>, container);
+                    return () => {
+                        unmountComponentAtNode(container);
+                    };
+                },
                 execute: (): void => {
                     const teamId = this.deps?.client.getTeamId();
                     if (teamId) {
                         const taskPath = this.deps?.client.getTaskPath(teamId, taskId);
                         const mentionTask = `[(task:${taskId})](${taskPath})`;
                         navigator.clipboard.writeText(mentionTask);
-                        this.deps?.client.showDynamicFeedback(
-                            `Github Mention for task(${taskId}) is copied to clipboard`,
+                        this.deps?.client.showDynamicFeedback((container: HTMLElement): CleanupFunc => {
+                                render(<>Github Mention for task({taskId}) is copied to clipboard</>, container);
+                                return () => {
+                                    unmountComponentAtNode(container);
+                                };
+                            },
                         );
                     }
                 },

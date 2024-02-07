@@ -25,7 +25,14 @@ export function EditEventComponent(props: Props) {
     };
 
     const onTaskIdChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const taskId = event.target.value ? parseInt(event.target.value) : 0;
+        let taskId = 0;
+        if (event.target.value) {
+            const num = Number(event.target.value);
+            if (!isNaN(num)) {
+                taskId = num;
+            }
+        }
+
         props.onEventChange?.(Object.assign({}, props.event, {
             taskId,
         }));

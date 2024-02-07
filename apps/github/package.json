@@ -12,20 +12,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@teamyapp/ext": "^0.0.15",
+    "@teamyapp/ext": "^0.0.16",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "classnames": "^2.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-replace": "^4.0.0",
+    "@rollup/plugin-replace": "^5.0.5",
     "@types/node": "^18.6.3",
-    "@types/react": "^18.0.15",
-    "@types/react-dom": "^18.0.6",
-    "@vitejs/plugin-react": "^2.0.0",
-    "rollup": "^2.77.2",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "rollup": "^4.9.6",
     "sass": "^1.54.2",
     "typescript": "^4.6.4",
-    "vite": "^3.0.4",
+    "vite": "^5.0.8",
     "vite-plugin-css-injected-by-js": "^2.0.2",
     "vite-plugin-static-copy": "^0.7.0"
   }
