@@ -3,11 +3,12 @@ import {
     TaskIdAction,
     ThirdPartyApp,
     ThirdPartyAppDeps,
-    CleanupFunc
+    CleanupFunc, ThirdPartyAppClient
 } from '@teamyapp/ext';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {LinkGithubAccountActionComponent} from './components/LinkGithubAccountAction.component';
 import {SettingsComponent} from './components/Settings.component';
+import {requestWithIdentity} from './lib/network';
 
 type UserActionType =
     |'LINK_GITHUB_ACCOUNT';
@@ -49,8 +50,8 @@ export class App implements ThirdPartyApp {
     };
 
     private onShowRequiredActions = async (onActionComplete: () => void): Promise<RequiredAction[]> => {
-        const url = `${githubAppWebEndpoint}/teams/${this.deps?.client.getTeamId()}/required-actions/current-user`;
-        const response = await this.requestWithIdentity(url);
+        const url = `${githubAppWebEndpoint}/teams/${this.deps!.client.getTeamId()}/required-actions/current-user`;
+        const response = await requestWithIdentity(this.deps!.client, url);
         if (!response) {
             return [];
         }
@@ -104,55 +105,4 @@ export class App implements ThirdPartyApp {
             }
         ];
     };
-
-    private requestWithIdentity = async (
-        url: string,
-        options?: {
-            method: string;
-            headers?: Record<string, string>;
-            body?: string;
-        },
-    ) => {
-        options = Object.assign(
-            {
-                headers: {
-                    Authorization: `Bearer ${this.deps?.client.getAccessToken()}`,
-                },
-            },
-            options,
-        );
-
-        return request(url, options);
-    };
-}
-
-async function request(
-    url: string,
-    options?: {
-        method: string;
-        headers?: Record<string, string>;
-        body?: string;
-    },
-): Promise<string | null> {
-    return new Promise<string | null>((resolve) => {
-        fetch(url, {
-            method: options?.method,
-            mode: 'cors',
-            cache: 'no-cache',
-            headers: options?.headers,
-            redirect: 'follow',
-            body: options?.body,
-        })
-            .then(async (response) => {
-                if (response.status >= 400) {
-                    throw new Error(`request failed: status=${response.status}`);
-                } else {
-                    resolve(await response.text());
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                resolve(null);
-            });
-    });
 }
