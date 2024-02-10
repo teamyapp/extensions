@@ -3,7 +3,8 @@ import {
     TaskIdAction,
     ThirdPartyApp,
     ThirdPartyAppDeps,
-    CleanupFunc, ThirdPartyAppClient
+    CleanupFunc, 
+    ThirdPartyAppClient
 } from '@teamyapp/ext';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {LinkGithubAccountActionComponent} from './components/LinkGithubAccountAction.component';
