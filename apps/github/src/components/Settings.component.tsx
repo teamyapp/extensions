@@ -37,6 +37,7 @@ interface Props {
 }
 
 export function SettingsComponent(props: Props) {
+    const [isInitialized, setIsInitialized] = useState(false);
     const [members, setMembers] = useState<Member[]>([]);
     const [memberGroups, setMemberGroups] = useState<MemberGroup[]>([]);
     const [selectedMemberIds, setSelectedMemberIds] = useState<Record<number, boolean>>({});
@@ -183,6 +184,7 @@ export function SettingsComponent(props: Props) {
             }
 
             setRequireGithub(defaultRequireGithub);
+            setIsInitialized(true);
         })();
     }, []);
 
@@ -192,7 +194,7 @@ export function SettingsComponent(props: Props) {
             , 0);
         const selectedGroup = memberUserIds.length === selectedMemberCount;
         const renderMemberGroupContent = () => {
-            return (
+            return isInitialized && (
                 <>
                     <div className={styles.TopBar}>
                         <div className={styles.SelectGroup}>
