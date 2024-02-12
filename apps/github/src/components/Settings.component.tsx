@@ -106,7 +106,12 @@ export function SettingsComponent(props: Props) {
             return [];
         }
 
-        return JSON.parse(response);
+        return JSON.parse(response).map((memberGroup: MemberGroup) => {
+            return {
+                ...memberGroup,
+                memberUserIds: memberGroup.memberUserIds || []
+            };
+        });
     };
 
     const fetchRequiredActions = async (userId: number): Promise<Record<UserActionType, RequiredAction> | undefined> => {
