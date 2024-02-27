@@ -42,6 +42,10 @@ export class App implements ThirdPartyApp {
 
     private onShowAppSetting = (container: HTMLElement): CleanupFunc => {
         if (this.deps) {
+
+            console.log("apps render show app setting", container, this.deps)
+
+
             render(<SettingsComponent deps={this.deps}/>, container);
         }
 

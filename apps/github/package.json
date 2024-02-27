@@ -6,10 +6,11 @@
     "dev": "vite",
     "build:base": "tsc && vite build",
     "build": "yarn build:base",
-    "build:development": "yarn build:base --mode development",
+    "build:development": "yarn build:base --mode development && cp ./manifest.yaml ./dist/manifest.yaml",
     "build:testing": "yarn build:base --mode testing",
     "build:staging": "yarn build:base --mode staging",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "compress": "tar -czvf dist.tar.gz dist"
   },
   "dependencies": {
     "@teamyapp/ext": "^0.0.16",

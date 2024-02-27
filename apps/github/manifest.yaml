@@ -1,0 +1,8 @@
+app_name: "github"
+description: "github app"
+hasUiExtension: true
+changes:
+  - "Initial version"
+  - "test"
+prices:
+  USD: 100
