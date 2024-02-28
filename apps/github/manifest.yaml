@@ -1,5 +1,5 @@
-app_name: "github"
-description: "github app"
+appName: "Github"
+description: "Github app"
 hasUiExtension: true
 changes:
   - "Initial version"
