@@ -2,7 +2,6 @@ appName: "Github"
 description: "Integrate Github with Teamy"
 hasUiExtension: true
 changes:
-  - "Add copy mention task"
-  - "Add require team members to link Github account"
+  - "Support install Teamy on Github"
 prices:
   USD: 0
