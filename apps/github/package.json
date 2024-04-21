@@ -10,7 +10,8 @@
     "build:testing": "yarn build:base --mode testing && yarn package",
     "build:staging": "yarn build:base --mode staging && yarn package",
     "preview": "vite preview",
-    "package": "cp ./manifest.yaml ./dist/manifest.yaml && tar -czf dist.tar.gz dist"
+    "package": "cp ./manifest.yaml ./dist/manifest.yaml && yarn prepare && tar -czf packages/app.tar.gz dist",
+    "prepare": "rm -rf packages && mkdir packages"
   },
   "dependencies": {
     "@teamyapp/ext": "^0.0.16",
