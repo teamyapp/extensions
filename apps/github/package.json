@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build:base": "tsc && vite build",
-    "build": "yarn build:base",
+    "build": "yarn build:base && yarn package",
     "build:development": "yarn build:base --mode development && yarn package",
     "build:testing": "yarn build:base --mode testing && yarn package",
     "build:staging": "yarn build:base --mode staging && yarn package",
