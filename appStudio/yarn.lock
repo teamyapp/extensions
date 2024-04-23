@@ -338,10 +338,10 @@
   resolved "https://registry.yarnpkg.com/@swc/types/-/types-0.1.5.tgz#043b731d4f56a79b4897a3de1af35e75d56bc63a"
   integrity sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==
 
-"@teamyapp/ext@^0.0.15":
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/@teamyapp/ext/-/ext-0.0.15.tgz#58fa55dace227c5816bb51dad5c5076f58e788ac"
-  integrity sha512-XTMV8qn+EDIHzqk5y2xJDiPUA+lkPd7O2IFJJ0ltvQGX5eStlrkRCnZWwm6gnLqPcj6suQ6pktTXNLbLxbTZoQ==
+"@teamyapp/ext@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/@teamyapp/ext/-/ext-0.0.16.tgz#4fd91bd6cd8d3f4bd8464a0420942e6a7a16d734"
+  integrity sha512-7nUOO2S/sLUkoF258ePlSlEU1O2c1+mong/5O9fuCRq7zLYys4PEbOeT1fPb3CmbH3zpLJ+8m4/e3BQjNitVeA==
 
 "@types/estree@1.0.5":
   version "1.0.5"
@@ -1060,10 +1060,10 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-material-symbols@^0.14.6:
-  version "0.14.6"
-  resolved "https://registry.yarnpkg.com/material-symbols/-/material-symbols-0.14.6.tgz#36b72fcd7ec95db9d3e48d67334545251895e643"
-  integrity sha512-pyo4ckYj9lbNiKY6w4OENmYzkAKsx7UkG24ChEMGp7EqnAYkNc0kpb1GbnJq391G97HHe+BGtUMrHyUYV3N8rg==
+material-symbols@^0.17.2:
+  version "0.17.2"
+  resolved "https://registry.yarnpkg.com/material-symbols/-/material-symbols-0.17.2.tgz#fe156867e02ec34bbfd228924c0c5469358f1f60"
+  integrity sha512-PfquyvrUTbqUBa4FLqGLBM5eaAlnNMuhqB7rXu+OuGfmmvx+Ste8dmuNEDNC+GTcqtyvDmfCL/EWz3z0XXjncA==
 
 merge2@^1.3.0, merge2@^1.4.1:
   version "1.4.1"
